@@ -28,6 +28,12 @@ data "aws_ami" "amazon_linux_2023" {
 	}
 }
 
+data "aws_ssm_parameter" "rds_master_password" {
+	count           = var.rds_master_password_ssm_parameter_name != null ? 1 : 0
+	name            = var.rds_master_password_ssm_parameter_name
+	with_decryption = true
+}
+
 locals {
 	tags = merge(
 		{
@@ -37,6 +43,7 @@ locals {
 		},
 		var.tags
 	)
+	resolved_rds_master_password = var.rds_master_password != null ? var.rds_master_password : one(data.aws_ssm_parameter.rds_master_password[*].value)
 }
 
 module "network" {
@@ -127,7 +134,7 @@ module "rds" {
 	max_allocated_storage    = var.rds_max_allocated_storage
 	db_name                  = var.rds_db_name
 	master_username          = var.rds_master_username
-	master_password          = var.rds_master_password
+	master_password          = local.resolved_rds_master_password
 	backup_retention_period  = var.rds_backup_retention_period
 	backup_window            = var.rds_backup_window
 	maintenance_window       = var.rds_maintenance_window
