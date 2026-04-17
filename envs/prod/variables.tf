@@ -115,9 +115,21 @@ variable "rds_master_username" {
 }
 
 variable "rds_master_password" {
-	description = "Master password for PostgreSQL."
+	description = "Master password for PostgreSQL. Set this directly only for emergency/manual use."
 	type        = string
+	default     = null
 	sensitive   = true
+
+	validation {
+		condition     = (var.rds_master_password != null) != (var.rds_master_password_ssm_parameter_name != null)
+		error_message = "Set exactly one of rds_master_password or rds_master_password_ssm_parameter_name."
+	}
+}
+
+variable "rds_master_password_ssm_parameter_name" {
+	description = "Name of an existing SecureString SSM parameter that stores the RDS master password."
+	type        = string
+	default     = null
 }
 
 variable "rds_backup_retention_period" {
