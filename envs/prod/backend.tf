@@ -1,6 +1,6 @@
 terraform {
 	backend "s3" {
-		bucket         = "replace-with-bootstrap-state-bucket-name"
+		bucket         = "gym-tracker-tf-state-606008290381-52451"
 		key            = "envs/prod/terraform.tfstate"
 		region         = "eu-central-1"
 		dynamodb_table = "gym-tracker-terraform-locks"
