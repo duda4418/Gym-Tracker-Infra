@@ -51,6 +51,11 @@ variable "root_volume_size" {
   default     = 30
 }
 
+variable "certbot_email" {
+  description = "Email address used for Let's Encrypt certificate registration and renewal notices."
+  type        = string
+}
+
 variable "tags" {
   description = "Tags applied to all resources."
   type        = map(string)

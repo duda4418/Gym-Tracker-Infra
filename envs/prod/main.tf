@@ -137,6 +137,7 @@ module "ec2" {
 	key_name                  = var.ec2_key_name
 	create_elastic_ip         = var.ec2_create_elastic_ip
 	root_volume_size          = var.ec2_root_volume_size
+	certbot_email             = var.ec2_certbot_email
 	tags                      = local.tags
 }
 

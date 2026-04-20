@@ -20,7 +20,6 @@ resource "aws_instance" "this" {
 
     usermod -aG docker ec2-user || true
 
-    mkdir -p /opt/gym-tracker
     mkdir -p /opt/gym-tracker/frontend
     mkdir -p /opt/gym-tracker/backend
     mkdir -p /opt/gym-tracker/observability
@@ -28,14 +27,66 @@ resource "aws_instance" "this" {
 
     # Clone infra repo to access Nginx script
     cd /tmp && git clone --depth 1 https://github.com/duda4418/Gym-Tracker-Infra.git
-    
-    # Setup Nginx reverse proxy with increased body size limit for uploads
-    export CLIENT_MAX_BODY_SIZE="100m"
-    export FORCE_HTTPS_REDIRECT="false"
-    bash /tmp/Gym-Tracker-Infra/scripts/nginx/harden_backend_proxy.sh
-    
+
+    # Install Nginx and configure initial HTTP-only stubs so Certbot can complete
+    # its HTTP-01 challenge before we have any TLS certs
+    dnf install -y nginx
     systemctl enable nginx
+
+    cat > /etc/nginx/conf.d/gym-tracker-backend.conf <<'NGINXEOF'
+server {
+    listen 80;
+    listen [::]:80;
+    server_name api.gym-tracker.website;
+
+    location / {
+        proxy_pass         http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+}
+NGINXEOF
+
+    cat > /etc/nginx/conf.d/gym-tracker-frontend.conf <<'NGINXEOF'
+server {
+    listen 80;
+    listen [::]:80;
+    server_name gym-tracker.website www.gym-tracker.website;
+
+    location / {
+        proxy_pass         http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Upgrade           $http_upgrade;
+        proxy_set_header   Connection        'upgrade';
+    }
+}
+NGINXEOF
+
+    nginx -t
     systemctl start nginx
+
+    # Install Certbot and obtain real Let's Encrypt certs for both domains.
+    # Certbot rewrites the conf files to add TLS + HTTP→HTTPS redirect automatically.
+    dnf install -y python3-certbot-nginx
+    certbot --nginx --non-interactive --agree-tos \
+      --email ${var.certbot_email} \
+      --domains api.gym-tracker.website \
+      --redirect
+
+    certbot --nginx --non-interactive --agree-tos \
+      --email ${var.certbot_email} \
+      --domains gym-tracker.website,www.gym-tracker.website \
+      --redirect
+
+    # Enable auto-renewal
+    systemctl enable --now certbot-renew.timer
   EOT
 
   root_block_device {

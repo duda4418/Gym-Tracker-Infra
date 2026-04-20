@@ -98,6 +98,11 @@ variable "ec2_root_volume_size" {
 	default     = 40
 }
 
+variable "ec2_certbot_email" {
+	description = "Email address for Let's Encrypt certificate registration via Certbot."
+	type        = string
+}
+
 variable "rds_engine_version" {
 	description = "PostgreSQL engine version for RDS."
 	type        = string
