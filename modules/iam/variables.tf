@@ -93,6 +93,24 @@ variable "ec2_managed_policy_arns" {
   ]
 }
 
+variable "ec2_ssm_parameter_arns" {
+  description = "SSM parameter ARNs the EC2 role can read at runtime."
+  type        = list(string)
+  default     = []
+}
+
+variable "ec2_secretsmanager_secret_arns" {
+  description = "Secrets Manager secret ARNs the EC2 role can read at runtime."
+  type        = list(string)
+  default     = []
+}
+
+variable "ec2_kms_key_arns" {
+  description = "Optional customer-managed KMS key ARNs the EC2 role can decrypt for runtime secret access."
+  type        = list(string)
+  default     = []
+}
+
 variable "tags" {
   description = "Tags applied to all resources."
   type        = map(string)

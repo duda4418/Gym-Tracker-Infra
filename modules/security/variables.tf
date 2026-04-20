@@ -25,6 +25,18 @@ variable "ssh_cidr_blocks" {
   default     = []
 }
 
+variable "allow_backend_port_8000" {
+  description = "Temporarily allow direct public access to backend port 8000."
+  type        = bool
+  default     = false
+}
+
+variable "backend_port_8000_cidr_blocks" {
+  description = "CIDR blocks allowed to access backend port 8000 when enabled."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
 variable "tags" {
   description = "Tags applied to all resources."
   type        = map(string)

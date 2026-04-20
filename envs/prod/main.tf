@@ -13,6 +13,10 @@ provider "aws" {
 	region = var.aws_region
 }
 
+data "aws_caller_identity" "current" {}
+
+data "aws_region" "current" {}
+
 data "aws_ami" "amazon_linux_2023" {
 	most_recent = true
 	owners      = ["amazon"]
@@ -35,6 +39,16 @@ data "aws_ssm_parameter" "rds_master_password" {
 }
 
 locals {
+	ec2_runtime_ssm_parameter_arns = [
+		for parameter_name in var.ec2_runtime_ssm_parameter_names :
+		format(
+			"arn:aws:ssm:%s:%s:parameter%s",
+			data.aws_region.current.name,
+			data.aws_caller_identity.current.account_id,
+			startswith(parameter_name, "/") ? parameter_name : "/${parameter_name}"
+		)
+	]
+
 	tags = merge(
 		{
 			Project     = var.project_name
@@ -66,6 +80,8 @@ module "security" {
 	vpc_id          = module.network.vpc_id
 	allow_ssh       = var.allow_ssh
 	ssh_cidr_blocks = var.ssh_cidr_blocks
+	allow_backend_port_8000       = var.allow_backend_port_8000
+	backend_port_8000_cidr_blocks = var.backend_port_8000_cidr_blocks
 	tags            = local.tags
 }
 
@@ -101,6 +117,9 @@ module "iam" {
 	ec2_role_name             = var.ec2_role_name
 	ec2_instance_profile_name = var.ec2_instance_profile_name
 	ec2_managed_policy_arns   = var.ec2_managed_policy_arns
+	ec2_ssm_parameter_arns    = local.ec2_runtime_ssm_parameter_arns
+	ec2_secretsmanager_secret_arns = var.ec2_runtime_secretsmanager_secret_arns
+	ec2_kms_key_arns          = var.ec2_runtime_kms_key_arns
 
 	tags = local.tags
 }

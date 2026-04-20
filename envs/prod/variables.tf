@@ -56,6 +56,18 @@ variable "ssh_cidr_blocks" {
 	default     = []
 }
 
+variable "allow_backend_port_8000" {
+	description = "Temporarily allow direct public access to backend port 8000."
+	type        = bool
+	default     = false
+}
+
+variable "backend_port_8000_cidr_blocks" {
+	description = "CIDR blocks allowed for backend port 8000 when temporary access is enabled."
+	type        = list(string)
+	default     = ["0.0.0.0/0"]
+}
+
 variable "ec2_ami_id" {
 	description = "Optional custom AMI ID for EC2. If null, latest Amazon Linux 2023 is used."
 	type        = string
@@ -270,6 +282,24 @@ variable "ec2_managed_policy_arns" {
 		"arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
 		"arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 	]
+}
+
+variable "ec2_runtime_ssm_parameter_names" {
+	description = "SSM parameter names that the EC2 role can read during deploy (for example, backend dotenv)."
+	type        = list(string)
+	default     = []
+}
+
+variable "ec2_runtime_secretsmanager_secret_arns" {
+	description = "Secrets Manager secret ARNs that the EC2 role can read during deploy."
+	type        = list(string)
+	default     = []
+}
+
+variable "ec2_runtime_kms_key_arns" {
+	description = "Optional customer-managed KMS key ARNs that EC2 can decrypt for runtime secret access."
+	type        = list(string)
+	default     = []
 }
 
 variable "log_retention_days" {

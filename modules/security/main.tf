@@ -30,6 +30,17 @@ resource "aws_security_group" "ec2" {
     }
   }
 
+  dynamic "ingress" {
+    for_each = var.allow_backend_port_8000 ? [1] : []
+    content {
+      description = "Temporary backend test access"
+      from_port   = 8000
+      to_port     = 8000
+      protocol    = "tcp"
+      cidr_blocks = var.backend_port_8000_cidr_blocks
+    }
+  }
+
   egress {
     from_port   = 0
     to_port     = 0

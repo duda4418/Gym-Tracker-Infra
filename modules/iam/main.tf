@@ -1,5 +1,6 @@
 locals {
   github_oidc_provider_arn = var.create_github_oidc_provider ? aws_iam_openid_connect_provider.github[0].arn : var.existing_github_oidc_provider_arn
+  create_ec2_runtime_secrets_policy = length(var.ec2_ssm_parameter_arns) > 0 || length(var.ec2_secretsmanager_secret_arns) > 0 || length(var.ec2_kms_key_arns) > 0
 }
 
 resource "aws_iam_openid_connect_provider" "github" {
@@ -152,4 +153,55 @@ resource "aws_iam_role_policy_attachment" "ec2_managed" {
 
   role       = aws_iam_role.ec2.name
   policy_arn = each.value
+}
+
+data "aws_iam_policy_document" "ec2_runtime_secrets" {
+  count = local.create_ec2_runtime_secrets_policy ? 1 : 0
+
+  dynamic "statement" {
+    for_each = length(var.ec2_ssm_parameter_arns) > 0 ? [1] : []
+
+    content {
+      sid       = "AllowReadRuntimeSsmParameters"
+      actions   = ["ssm:GetParameter", "ssm:GetParameters"]
+      resources = var.ec2_ssm_parameter_arns
+    }
+  }
+
+  dynamic "statement" {
+    for_each = length(var.ec2_secretsmanager_secret_arns) > 0 ? [1] : []
+
+    content {
+      sid       = "AllowReadRuntimeSecretsManagerSecrets"
+      actions   = ["secretsmanager:GetSecretValue"]
+      resources = var.ec2_secretsmanager_secret_arns
+    }
+  }
+
+  dynamic "statement" {
+    for_each = length(var.ec2_kms_key_arns) > 0 ? [1] : []
+
+    content {
+      sid       = "AllowDecryptRuntimeSecretKeys"
+      actions   = ["kms:Decrypt"]
+      resources = var.ec2_kms_key_arns
+    }
+  }
+}
+
+resource "aws_iam_policy" "ec2_runtime_secrets" {
+  count = local.create_ec2_runtime_secrets_policy ? 1 : 0
+
+  name        = "${var.ec2_role_name}-runtime-secrets-read"
+  description = "Least-privilege runtime secret read for Gym Tracker EC2 deploys."
+  policy      = data.aws_iam_policy_document.ec2_runtime_secrets[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_runtime_secrets" {
+  count = local.create_ec2_runtime_secrets_policy ? 1 : 0
+
+  role       = aws_iam_role.ec2.name
+  policy_arn = aws_iam_policy.ec2_runtime_secrets[0].arn
 }
