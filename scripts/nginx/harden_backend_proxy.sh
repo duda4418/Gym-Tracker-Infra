@@ -15,7 +15,7 @@ FORCE_HTTPS_REDIRECT="${FORCE_HTTPS_REDIRECT:-false}"
 API_RATE_LIMIT="${API_RATE_LIMIT:-10r/s}"
 API_RATE_BURST="${API_RATE_BURST:-30}"
 API_CONN_LIMIT="${API_CONN_LIMIT:-20}"
-CLIENT_MAX_BODY_SIZE="${CLIENT_MAX_BODY_SIZE:-10m}"
+CLIENT_MAX_BODY_SIZE="${CLIENT_MAX_BODY_SIZE:-100m}"
 
 TLS_CERT_PATH="${TLS_CERT_PATH:-/etc/nginx/ssl/gym-tracker-selfsigned.crt}"
 TLS_KEY_PATH="${TLS_KEY_PATH:-/etc/nginx/ssl/gym-tracker-selfsigned.key}"
@@ -39,7 +39,7 @@ if [[ ! -f "${TLS_CERT_PATH}" || ! -f "${TLS_KEY_PATH}" ]]; then
 fi
 
 if [[ "${FORCE_HTTPS_REDIRECT}" == "true" ]]; then
-  sudo tee "${NGINX_CONF}" >/dev/null <<EOF
+  sudo tee "${NGINX_CONF}" >/dev/null <<'EOF'
 limit_req_zone \$binary_remote_addr zone=api_limit_per_ip:10m rate=${API_RATE_LIMIT};
 limit_conn_zone \$binary_remote_addr zone=api_conn_per_ip:10m;
 
@@ -100,7 +100,7 @@ server {
 }
 EOF
 else
-  sudo tee "${NGINX_CONF}" >/dev/null <<EOF
+  sudo tee "${NGINX_CONF}" >/dev/null <<'EOF'
 limit_req_zone \$binary_remote_addr zone=api_limit_per_ip:10m rate=${API_RATE_LIMIT};
 limit_conn_zone \$binary_remote_addr zone=api_conn_per_ip:10m;
 

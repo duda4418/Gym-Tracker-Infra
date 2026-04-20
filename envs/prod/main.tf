@@ -181,3 +181,53 @@ module "dns" {
 	record_name   = var.route53_record_name
 	record_value  = module.ec2.public_ip
 }
+
+# Least-privilege SSM policy for the frontend GitHub Actions deployment role.
+# Replaces the overly broad AmazonSSMFullAccess managed policy.
+resource "aws_iam_policy" "frontend_ssm_deploy" {
+	name        = "gym-tracker-frontend-ssm-deploy"
+	description = "Least-privilege SSM access for frontend GitHub Actions deployment."
+
+	policy = jsonencode({
+		Version = "2012-10-17"
+		Statement = [
+			{
+				Sid    = "AllowUpdateFrontendEnvParameter"
+				Effect = "Allow"
+				Action = ["ssm:PutParameter", "ssm:GetParameter"]
+				Resource = format(
+					"arn:aws:ssm:%s:%s:parameter/gym-tracker/prod/frontend/env",
+					data.aws_region.current.name,
+					data.aws_caller_identity.current.account_id
+				)
+			},
+			{
+				Sid    = "AllowSendCommandToFrontendEC2"
+				Effect = "Allow"
+				Action = ["ssm:SendCommand"]
+				Resource = [
+					format("arn:aws:ssm:%s::document/AWS-RunShellScript", data.aws_region.current.name),
+					format(
+						"arn:aws:ec2:%s:%s:instance/%s",
+						data.aws_region.current.name,
+						data.aws_caller_identity.current.account_id,
+						module.ec2.instance_id
+					)
+				]
+			},
+			{
+				Sid      = "AllowCheckCommandStatus"
+				Effect   = "Allow"
+				Action   = ["ssm:GetCommandInvocation"]
+				Resource = "*"
+			}
+		]
+	})
+
+	tags = local.tags
+}
+
+resource "aws_iam_role_policy_attachment" "frontend_ssm_deploy" {
+	role       = var.frontend_role_name
+	policy_arn = aws_iam_policy.frontend_ssm_deploy.arn
+}

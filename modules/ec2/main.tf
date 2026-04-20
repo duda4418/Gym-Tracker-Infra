@@ -12,7 +12,7 @@ resource "aws_instance" "this" {
     set -euxo pipefail
 
     dnf update -y
-    dnf install -y docker awscli
+    dnf install -y docker awscli git
     dnf install -y docker-compose-plugin || true
 
     systemctl enable docker
@@ -25,6 +25,17 @@ resource "aws_instance" "this" {
     mkdir -p /opt/gym-tracker/backend
     mkdir -p /opt/gym-tracker/observability
     chown -R ec2-user:ec2-user /opt/gym-tracker
+
+    # Clone infra repo to access Nginx script
+    cd /tmp && git clone --depth 1 https://github.com/duda4418/Gym-Tracker-Infra.git
+    
+    # Setup Nginx reverse proxy with increased body size limit for uploads
+    export CLIENT_MAX_BODY_SIZE="100m"
+    export FORCE_HTTPS_REDIRECT="false"
+    bash /tmp/Gym-Tracker-Infra/scripts/nginx/harden_backend_proxy.sh
+    
+    systemctl enable nginx
+    systemctl start nginx
   EOT
 
   root_block_device {
