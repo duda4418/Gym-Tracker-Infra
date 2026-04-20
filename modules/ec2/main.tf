@@ -5,7 +5,7 @@ resource "aws_instance" "this" {
   vpc_security_group_ids      = var.security_group_ids
   iam_instance_profile        = var.iam_instance_profile_name
   key_name                    = var.key_name
-  associate_public_ip_address = var.create_elastic_ip ? false : true
+  associate_public_ip_address = true
 
   user_data = <<-EOT
     #!/bin/bash
