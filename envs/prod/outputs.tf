@@ -13,6 +13,11 @@ output "ec2_public_ip" {
 	value       = module.ec2.public_ip
 }
 
+output "ec2_elastic_ip" {
+	description = "Elastic IP address attached to EC2 when enabled."
+	value       = module.ec2.elastic_ip
+}
+
 output "rds_endpoint" {
 	description = "RDS endpoint."
 	value       = module.rds.endpoint

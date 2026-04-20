@@ -135,6 +135,7 @@ module "ec2" {
 	security_group_ids        = [module.security.ec2_security_group_id]
 	iam_instance_profile_name = module.iam.ec2_instance_profile_name
 	key_name                  = var.ec2_key_name
+	create_elastic_ip         = var.ec2_create_elastic_ip
 	root_volume_size          = var.ec2_root_volume_size
 	tags                      = local.tags
 }

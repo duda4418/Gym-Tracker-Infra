@@ -5,7 +5,7 @@ resource "aws_instance" "this" {
   vpc_security_group_ids      = var.security_group_ids
   iam_instance_profile        = var.iam_instance_profile_name
   key_name                    = var.key_name
-  associate_public_ip_address = true
+  associate_public_ip_address = var.create_elastic_ip ? false : true
 
   user_data = <<-EOT
     #!/bin/bash
@@ -41,5 +41,16 @@ resource "aws_instance" "this" {
 
   tags = merge(var.tags, {
     Name = "${var.project}-${var.environment}-ec2"
+  })
+}
+
+resource "aws_eip" "this" {
+  count = var.create_elastic_ip ? 1 : 0
+
+  domain   = "vpc"
+  instance = aws_instance.this.id
+
+  tags = merge(var.tags, {
+    Name = "${var.project}-${var.environment}-ec2-eip"
   })
 }

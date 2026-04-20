@@ -86,6 +86,12 @@ variable "ec2_key_name" {
 	default     = null
 }
 
+variable "ec2_create_elastic_ip" {
+	description = "Whether to allocate and associate an Elastic IP to the EC2 instance."
+	type        = bool
+	default     = false
+}
+
 variable "ec2_root_volume_size" {
 	description = "Root EBS volume size for EC2 instance in GB."
 	type        = number
