@@ -61,3 +61,61 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+# ---------------------------------------------------------------------------
+# Observability stack (optional — disabled by default)
+# ---------------------------------------------------------------------------
+
+variable "enable_observability" {
+  description = "When true, installs the observability stack (Grafana, Prometheus, Loki, Tempo, Pyroscope, OTEL Collector, Alertmanager, Promtail) on this EC2 at boot."
+  type        = bool
+  default     = false
+}
+
+variable "obs_config_repo_url" {
+  description = "HTTPS git URL of the repo containing observability config files. Required when enable_observability = true."
+  type        = string
+  default     = null
+}
+
+variable "obs_config_repo_branch" {
+  description = "Branch to clone from obs_config_repo_url."
+  type        = string
+  default     = "master"
+}
+
+variable "obs_grafana_admin_password_ssm_param" {
+  description = "SSM SecureString parameter name for the Grafana admin password. Required when enable_observability = true."
+  type        = string
+  default     = null
+}
+
+variable "obs_alertmanager_email_password_ssm_param" {
+  description = "SSM SecureString parameter name for the Alertmanager SMTP password. Required when enable_observability = true."
+  type        = string
+  default     = null
+}
+
+variable "obs_alertmanager_smarthost" {
+  description = "Alertmanager SMTP smarthost (host:port)."
+  type        = string
+  default     = "smtp.gmail.com:587"
+}
+
+variable "obs_alertmanager_email_from" {
+  description = "Alertmanager sender email address."
+  type        = string
+  default     = null
+}
+
+variable "obs_alertmanager_email_to" {
+  description = "Alertmanager alert recipient email address."
+  type        = string
+  default     = null
+}
+
+variable "obs_alertmanager_auth_username" {
+  description = "Alertmanager SMTP auth username."
+  type        = string
+  default     = null
+}

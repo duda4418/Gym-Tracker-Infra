@@ -28,6 +28,7 @@ output "ecr_repository_urls" {
 	value       = module.ecr.repository_urls
 }
 
+
 output "infra_role_arn" {
 	description = "IAM role ARN for infra GitHub workflow."
 	value       = module.iam.infra_role_arn

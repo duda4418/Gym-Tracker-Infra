@@ -82,7 +82,8 @@ module "security" {
 	ssh_cidr_blocks = var.ssh_cidr_blocks
 	allow_backend_port_8000       = var.allow_backend_port_8000
 	backend_port_8000_cidr_blocks = var.backend_port_8000_cidr_blocks
-	tags            = local.tags
+
+	tags = local.tags
 }
 
 module "ecr" {
@@ -138,7 +139,18 @@ module "ec2" {
 	create_elastic_ip         = var.ec2_create_elastic_ip
 	root_volume_size          = var.ec2_root_volume_size
 	certbot_email             = var.ec2_certbot_email
-	tags                      = local.tags
+
+	enable_observability                      = var.create_observability
+	obs_config_repo_url                       = var.obs_config_repo_url
+	obs_config_repo_branch                    = var.obs_config_repo_branch
+	obs_grafana_admin_password_ssm_param      = var.obs_grafana_admin_password_ssm_param
+	obs_alertmanager_email_password_ssm_param = var.obs_alertmanager_email_password_ssm_param
+	obs_alertmanager_smarthost                = var.obs_alertmanager_smarthost
+	obs_alertmanager_email_from               = var.obs_alertmanager_email_from
+	obs_alertmanager_email_to                 = var.obs_alertmanager_email_to
+	obs_alertmanager_auth_username            = var.obs_alertmanager_auth_username
+
+	tags = local.tags
 }
 
 module "rds" {
