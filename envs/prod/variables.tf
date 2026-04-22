@@ -342,7 +342,7 @@ variable "route53_record_name" {
 # ---------------------------------------------------------------------------
 
 variable "create_observability" {
-	description = "When true, installs the observability stack on the main EC2 at boot."
+	description = "When true, installs and updates the observability stack on the main EC2."
 	type        = bool
 	default     = true
 }

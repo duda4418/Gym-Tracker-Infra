@@ -62,12 +62,9 @@ variable "tags" {
   default     = {}
 }
 
-# ---------------------------------------------------------------------------
 # Observability stack (optional — disabled by default)
-# ---------------------------------------------------------------------------
-
 variable "enable_observability" {
-  description = "When true, installs the observability stack (Grafana, Prometheus, Loki, Tempo, Pyroscope, OTEL Collector, Alertmanager, Promtail) on this EC2 at boot."
+  description = "When true, installs and keeps the observability stack (Grafana, Prometheus, Loki, Tempo, Pyroscope, OTEL Collector, Alertmanager, Promtail) updated on this EC2 via bootstrap plus SSM."
   type        = bool
   default     = false
 }

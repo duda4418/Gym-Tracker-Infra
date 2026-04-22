@@ -196,7 +196,6 @@ module "dns" {
 }
 
 # Least-privilege SSM policy for the frontend GitHub Actions deployment role.
-# Replaces the overly broad AmazonSSMFullAccess managed policy.
 resource "aws_iam_policy" "frontend_ssm_deploy" {
 	name        = "gym-tracker-frontend-ssm-deploy"
 	description = "Least-privilege SSM access for frontend GitHub Actions deployment."
